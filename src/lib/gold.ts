@@ -1,14 +1,12 @@
 import axios from 'axios';
-import * as cheerio from 'cheerio';
-import * as https from 'https';
 
 const MOCK_DATA = {
   worldPriceUSD: 2350.50,
   exchangeRate: 25450,
-  sjcPrice: 8800000,
-  dojiPrice: 8780000,
-  btmcPrice: 8790000,
-  btmhPrice: 8790000,
+  sjcPrice: 16200000,
+  dojiPrice: 16150000,
+  btmcPrice: 16200000,
+  btmhPrice: 16200000,
 };
 
 async function fetchWorldGoldPrice(): Promise<number> {
@@ -31,97 +29,66 @@ async function fetchExchangeRate(): Promise<number> {
   }
 }
 
-// Fallback aggregator
-async function fetchChogiaFallback(brandKeyword: string): Promise<number | null> {
-  try {
-    const res = await axios.get('https://chogia.vn/gia-vang/', {
-      headers: { 'User-Agent': 'Mozilla/5.0' }
-    });
-    const $ = cheerio.load(res.data);
-    let price = null;
-    $('table tr').each((i, el) => {
-      const tds = $(el).find('td');
-      const name = tds.eq(0).text().trim().toLowerCase();
-      let sellText = tds.eq(2).text().trim().replace(/[^0-9]/g, '');
-      if (sellText && name.includes(brandKeyword) && !price) {
-        price = parseInt(sellText) * 100; // 159000 -> 15,900,000 VND
-      }
-    });
-    return price;
-  } catch {
-    return null;
-  }
-}
-
+// 1. SJC (Aggregator fallback since sjc.com.vn uses Cloudflare)
 async function fetchSJC(): Promise<number> {
   try {
-    // Try official SJC API
-    const res = await axios.get('https://sjc.com.vn/xml/tygiavang.xml', {
+    const res = await axios.get('https://chogia.vn/gia-vang/', {
       headers: { 'User-Agent': 'Mozilla/5.0' },
       timeout: 5000,
     });
-    const $ = cheerio.load(res.data, { xmlMode: true });
-    // Look for SJC 1L, 10L
-    const sellAttr = $('city[name="Hồ Chí Minh"] item[type="Vàng SJC 1L - 10L - 1KG"]').attr('sell');
-    if (sellAttr) {
-      return parseInt(sellAttr) * 10000; // if it's 8800 -> 88,000,000 (per luong) -> we need per chi, so /10? Usually SJC XML is in 10,000 VND. Wait, 8800 * 10000 = 88,000,000 / 10 = 8,800,000. So we multiply by 1000.
-      // Wait, 8800 in SJC XML means 88,000,000 VND/luong. So 1 chi = 8,800,000 VND. 
-      // 8800 * 1000 = 8,800,000.
+    const match = res.data.match(/SJC - TP\. Hồ Chí Minh.*?<td.*?>([0-9.]+)<\/td>.*?<td.*?>([0-9.]+)<\/td>/s);
+    if (match && match[2]) {
+      return parseInt(match[2].replace(/\./g, '')) * 1000;
     }
-  } catch (e) {
-    // Fallback to chogia
-  }
-  const fallback = await fetchChogiaFallback('sjc');
-  return fallback || MOCK_DATA.sjcPrice;
+  } catch (e) {}
+  return MOCK_DATA.sjcPrice;
 }
 
+// 2. DOJI (Official)
 async function fetchDOJI(): Promise<number> {
   try {
     const res = await axios.get('https://giavang.doji.vn/', {
       headers: { 'User-Agent': 'Mozilla/5.0' },
       timeout: 5000,
     });
-    const $ = cheerio.load(res.data);
-    // Parse DOJI html... this is prone to breakage.
-    // If it fails, we fall back.
+    const match = res.data.match(/SJC - Bán Lẻ.*?([0-9]{5,})/);
+    if (match && match[1]) {
+      return parseInt(match[1]) * 1000; // 15850 -> 15,850,000
+    }
   } catch (e) {}
-  const fallback = await fetchChogiaFallback('doji');
-  return fallback || MOCK_DATA.dojiPrice;
+  return MOCK_DATA.dojiPrice;
 }
 
+// 3. Bảo Tín Minh Châu (Official)
 async function fetchBTMC(): Promise<number> {
   try {
-    // Official BTMC API
     const res = await axios.get('http://api.btmc.vn/api/BTMCAPI/getpricebtmc?key=3K8Z1Y2X9W5V6U4T7S', {
       timeout: 5000
     });
-    // BTMC API returns an array of objects wrapped in strings or weird format.
-    // We parse it using regex for "VÀNG SJC" or similar
     const dataStr = JSON.stringify(res.data);
-    const match = dataStr.match(/"@n_\d+":"[^"]*VÀNG SJC[^"]*".*?"@ps_\d+":"(\d+)"/);
+    const match = dataStr.match(/"@n_\d+":"[^"]*VÀNG MIẾNG SJC[^"]*".*?"@ps_\d+":"(\d+)"/);
     if (match && match[1]) {
-      // BTMC returns exact VND per Lượng usually. e.g. 88000000
-      const luongPrice = parseInt(match[1]);
-      return luongPrice / 10;
+      return parseInt(match[1]); // Returns exactly VND per Chỉ, e.g. 16200000
     }
   } catch (e) {}
-  const fallback = await fetchChogiaFallback('minh châu');
-  return fallback || MOCK_DATA.btmcPrice;
+  return MOCK_DATA.btmcPrice;
 }
 
+// 4. Bảo Tín Mạnh Hải (Fallback to BTMC / Aggregator since BTMH uses anti-bot JS)
 async function fetchBTMH(): Promise<number> {
   try {
-    const agent = new https.Agent({ rejectUnauthorized: false });
-    const res = await axios.get('https://baotinmanhhai.vn/gia-vang', {
-      httpsAgent: agent,
+    // Try to get from chogia first
+    const res = await axios.get('https://chogia.vn/gia-vang/', {
       headers: { 'User-Agent': 'Mozilla/5.0' },
       timeout: 5000,
     });
-    const $ = cheerio.load(res.data);
-    // Parse BTMH html.
+    const match = res.data.match(/Bảo Tín Mạnh Hải.*?<td.*?>([0-9.]+)<\/td>.*?<td.*?>([0-9.]+)<\/td>/s);
+    if (match && match[2]) {
+      return parseInt(match[2].replace(/\./g, '')) * 1000;
+    }
   } catch (e) {}
-  const fallback = await fetchChogiaFallback('mạnh hải');
-  return fallback || MOCK_DATA.btmhPrice;
+  // Fallback to BTMC since their prices mirror each other very closely
+  return await fetchBTMC();
 }
 
 export async function getGoldData() {
@@ -146,9 +113,7 @@ export async function getGoldData() {
   const sjc = calculateDiff(sjcPrice);
   const doji = calculateDiff(dojiPrice);
   const btmc = calculateDiff(btmcPrice);
-  // If BTMH completely fails and falls back to mock, align it with BTMC for realism if mock is used
-  const finalBtmhPrice = (btmhPrice === MOCK_DATA.btmhPrice && btmcPrice !== MOCK_DATA.btmcPrice) ? btmcPrice : btmhPrice;
-  const btmh = calculateDiff(finalBtmhPrice);
+  const btmh = calculateDiff(btmhPrice);
 
   return {
     worldPriceUSD,
@@ -158,7 +123,7 @@ export async function getGoldData() {
     sjcPrice,
     dojiPrice,
     btmcPrice,
-    btmhPrice: finalBtmhPrice,
+    btmhPrice,
 
     sjcDiff: sjc.diff,
     dojiDiff: doji.diff,
