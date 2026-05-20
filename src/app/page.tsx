@@ -35,21 +35,21 @@ export default async function Home() {
       price: currentData.sjcPrice, 
       diff: currentData.sjcDiff, 
       pct: currentData.sjcDiffPct,
-      url: 'https://chogia.vn/gia-vang/' 
+      url: 'https://sjc.com.vn/gia-vang/' 
     },
     { 
       name: 'DOJI', 
       price: currentData.dojiPrice, 
       diff: currentData.dojiDiff, 
       pct: currentData.dojiDiffPct,
-      url: 'https://chogia.vn/gia-vang/'
+      url: 'https://giavang.doji.vn/'
     },
     { 
       name: 'Bảo Tín Minh Châu', 
       price: currentData.btmcPrice, 
       diff: currentData.btmcDiff, 
       pct: currentData.btmcDiffPct,
-      url: 'https://chogia.vn/gia-vang/'
+      url: 'https://btmc.vn/gia-vang.html'
     },
     { 
       name: 'Bảo Tín Mạnh Hải', 
@@ -119,7 +119,7 @@ export default async function Home() {
                       <MapPin className="w-4 h-4 text-red-400" />
                       <span className="font-semibold text-lg">{brand.name}</span>
                     </div>
-                    <a href={brand.url} target="_blank" rel="noopener noreferrer" title="Kiểm tra nguồn" className="text-zinc-500 hover:text-gold-400 transition-colors">
+                    <a href={brand.url} target="_blank" rel="noopener noreferrer" title="Kiểm tra nguồn chính thức" className="text-zinc-500 hover:text-gold-400 transition-colors">
                       <ExternalLink className="w-5 h-5" />
                     </a>
                   </div>
