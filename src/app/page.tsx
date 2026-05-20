@@ -4,7 +4,6 @@ import { TrendingUp, TrendingDown, Clock, Globe, MapPin, DollarSign, Activity } 
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
 
-// Revalidate every 60 seconds
 export const revalidate = 60;
 
 export default async function Home() {
@@ -13,7 +12,7 @@ export default async function Home() {
     prisma.goldPriceHistory.findMany({
       orderBy: { recordedAt: 'desc' },
       take: 20,
-    }).catch(() => []) // Catch if DB isn't initialized yet
+    }).catch(() => []) 
   ]);
 
   const formatVND = (value: number) => {
@@ -30,90 +29,85 @@ export default async function Home() {
     }).format(value);
   };
 
-  const diffIsPositive = currentData.differenceVND > 0;
+  const vnBrands = [
+    { name: 'SJC', price: currentData.sjcPrice, diff: currentData.sjcDiff, pct: currentData.sjcDiffPct },
+    { name: 'DOJI', price: currentData.dojiPrice, diff: currentData.dojiDiff, pct: currentData.dojiDiffPct },
+    { name: 'Bảo Tín Minh Châu', price: currentData.btmcPrice, diff: currentData.btmcDiff, pct: currentData.btmcDiffPct },
+    { name: 'Bảo Tín Mạnh Hải', price: currentData.btmhPrice, diff: currentData.btmhDiff, pct: currentData.btmhDiffPct },
+  ];
 
   return (
     <main className="min-h-screen p-4 md:p-8 lg:p-24 overflow-hidden relative">
-      {/* Background elements */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-gold-500/20 rounded-full blur-[120px]" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-zinc-700/30 rounded-full blur-[120px]" />
       </div>
 
-      <div className="max-w-5xl mx-auto space-y-12">
-        {/* Header */}
+      <div className="max-w-6xl mx-auto space-y-12">
         <header className="text-center space-y-4">
           <div className="inline-flex items-center justify-center p-2 bg-gold-500/10 rounded-2xl mb-4 border border-gold-500/20">
             <Activity className="w-6 h-6 text-gold-400 mr-2" />
-            <span className="text-gold-200 font-medium tracking-wide">GOLD DIFFERENCE TRACKER</span>
+            <span className="text-gold-200 font-medium tracking-wide">REAL-TIME GOLD TRACKER</span>
           </div>
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-gradient">
             Chênh Lệch Giá Vàng
           </h1>
           <p className="text-zinc-400 text-lg md:text-xl max-w-2xl mx-auto">
-            So sánh giá vàng SJC trong nước và thế giới theo thời gian thực (tính trên 1 chỉ vàng).
+            So sánh giá các thương hiệu vàng Việt Nam với thế giới theo thời gian thực (tính trên 1 chỉ vàng).
           </p>
         </header>
 
-        {/* Main Dashboard */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* World Price Card */}
-          <div className="glass-panel rounded-3xl p-6 relative overflow-hidden group hover:border-gold-500/30 transition-all duration-300">
+        {/* World Price */}
+        <div className="flex justify-center">
+          <div className="glass-panel rounded-3xl p-8 relative overflow-hidden group hover:border-gold-500/30 transition-all duration-300 w-full max-w-md text-center">
             <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
-              <Globe className="w-24 h-24" />
+              <Globe className="w-32 h-32" />
             </div>
             <div className="relative z-10">
-              <div className="flex items-center space-x-2 text-zinc-400 mb-2">
+              <div className="flex items-center justify-center space-x-2 text-zinc-400 mb-3">
                 <Globe className="w-5 h-5 text-blue-400" />
-                <span className="font-medium">Giá Thế Giới / Chỉ</span>
+                <span className="font-medium text-lg">Giá Thế Giới / Chỉ</span>
               </div>
-              <div className="text-3xl font-bold text-zinc-100 mb-1">
+              <div className="text-4xl font-bold text-zinc-100 mb-2">
                 {formatVND(currentData.worldPriceVND)}
               </div>
-              <div className="text-sm text-zinc-500 flex items-center">
-                <DollarSign className="w-3 h-3 mr-1" />
+              <div className="text-zinc-500 flex items-center justify-center">
+                <DollarSign className="w-4 h-4 mr-1" />
                 {formatUSD(currentData.worldPriceUSD)} / Troy Ounce
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Vietnam Price Card */}
-          <div className="glass-panel rounded-3xl p-6 relative overflow-hidden group hover:border-gold-500/30 transition-all duration-300">
-            <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
-              <MapPin className="w-24 h-24" />
-            </div>
-            <div className="relative z-10">
-              <div className="flex items-center space-x-2 text-zinc-400 mb-2">
-                <MapPin className="w-5 h-5 text-red-400" />
-                <span className="font-medium">Giá SJC / Chỉ</span>
-              </div>
-              <div className="text-3xl font-bold text-zinc-100 mb-1">
-                {formatVND(currentData.vnPriceVND)}
-              </div>
-              <div className="text-sm text-zinc-500">
-                1 Lượng = 10 Chỉ
-              </div>
-            </div>
-          </div>
+        {/* VN Brands Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {vnBrands.map((brand, idx) => {
+            const isPositive = brand.diff > 0;
+            return (
+              <div key={idx} className="glass-panel rounded-3xl p-6 relative overflow-hidden hover:bg-white/5 transition-all duration-300 border border-white/5 hover:border-gold-500/30">
+                <div className="mb-4">
+                  <div className="flex items-center space-x-2 text-zinc-300 mb-1">
+                    <MapPin className="w-4 h-4 text-red-400" />
+                    <span className="font-semibold text-lg">{brand.name}</span>
+                  </div>
+                  <div className="text-2xl font-bold text-white">
+                    {formatVND(brand.price)}
+                  </div>
+                </div>
 
-          {/* Difference Card */}
-          <div className="glass-panel rounded-3xl p-6 relative overflow-hidden border-gold-500/20 bg-gold-500/5 group">
-            <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity text-gold-500">
-              <Activity className="w-24 h-24" />
-            </div>
-            <div className="relative z-10">
-              <div className="flex items-center space-x-2 text-gold-200 mb-2">
-                <TrendingUp className="w-5 h-5" />
-                <span className="font-medium">Chênh Lệch / Chỉ</span>
+                <div className="pt-4 border-t border-zinc-800">
+                  <div className="text-sm text-zinc-400 mb-1">Độ chênh lệch:</div>
+                  <div className={`text-xl font-bold flex items-center ${isPositive ? 'text-red-400' : 'text-green-400'}`}>
+                    {isPositive ? <TrendingUp className="w-5 h-5 mr-1" /> : <TrendingDown className="w-5 h-5 mr-1" />}
+                    {formatVND(Math.abs(brand.diff))}
+                  </div>
+                  <div className={`mt-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-bold ${isPositive ? 'bg-red-500/10 text-red-400' : 'bg-green-500/10 text-green-400'}`}>
+                    {isPositive ? '+' : '-'}{Math.abs(brand.pct).toFixed(2)}%
+                  </div>
+                </div>
               </div>
-              <div className="text-4xl font-black text-gold-400 mb-2">
-                {formatVND(Math.abs(currentData.differenceVND))}
-              </div>
-              <div className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${diffIsPositive ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-green-500/10 text-green-400 border border-green-500/20'}`}>
-                {diffIsPositive ? 'SJC Cao Hơn' : 'Thế Giới Cao Hơn'}
-              </div>
-            </div>
-          </div>
+            );
+          })}
         </div>
 
         {/* Historical Data Section */}
@@ -121,10 +115,10 @@ export default async function Home() {
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-2xl font-bold flex items-center">
               <Clock className="w-6 h-6 mr-3 text-gold-400" />
-              Lịch Sử Biến Động
+              Lịch Sử Biến Động (SJC)
             </h2>
             <div className="text-sm text-zinc-500 bg-zinc-800/50 px-4 py-2 rounded-full border border-zinc-700/50">
-              Tự động lưu lúc 10h sáng và 10h tối
+              Lưu tự động lúc 10h sáng và 10h tối
             </div>
           </div>
 
@@ -134,9 +128,10 @@ export default async function Home() {
                 <thead>
                   <tr className="border-b border-zinc-800 text-zinc-400">
                     <th className="pb-4 font-medium pl-4">Thời Gian</th>
-                    <th className="pb-4 font-medium">Giá Thế Giới</th>
-                    <th className="pb-4 font-medium">Giá SJC</th>
+                    <th className="pb-4 font-medium">Thế Giới</th>
+                    <th className="pb-4 font-medium">SJC</th>
                     <th className="pb-4 font-medium">Chênh Lệch</th>
+                    <th className="pb-4 font-medium">Tỷ lệ (%)</th>
                   </tr>
                 </thead>
                 <tbody className="text-zinc-300">
@@ -146,9 +141,12 @@ export default async function Home() {
                         {format(new Date(record.recordedAt), 'HH:mm - dd/MM/yyyy', { locale: vi })}
                       </td>
                       <td className="py-4">{formatVND(record.worldPriceVND)}</td>
-                      <td className="py-4">{formatVND(record.vnPriceVND)}</td>
-                      <td className="py-4 text-gold-400 font-medium">
-                        {formatVND(Math.abs(record.differenceVND))}
+                      <td className="py-4">{formatVND(record.sjcPrice)}</td>
+                      <td className="py-4 font-medium text-gold-400">
+                        {formatVND(Math.abs(record.sjcDiff))}
+                      </td>
+                      <td className="py-4 font-medium text-gold-400">
+                        {record.sjcDiffPct.toFixed(2)}%
                       </td>
                     </tr>
                   ))}

@@ -3,7 +3,6 @@ import { prisma } from '@/lib/prisma';
 import { getGoldData } from '@/lib/gold';
 
 export async function GET(request: Request) {
-  // Check authorization for cron job (Vercel provides a CRON_SECRET)
   const authHeader = request.headers.get('authorization');
   if (
     process.env.CRON_SECRET &&
@@ -15,14 +14,26 @@ export async function GET(request: Request) {
   try {
     const data = await getGoldData();
     
-    // Save to database
     const history = await prisma.goldPriceHistory.create({
       data: {
         worldPriceUSD: data.worldPriceUSD,
         worldPriceVND: data.worldPriceVND,
-        vnPriceVND: data.vnPriceVND,
-        differenceVND: data.differenceVND,
         exchangeRate: data.exchangeRate,
+        
+        sjcPrice: data.sjcPrice,
+        dojiPrice: data.dojiPrice,
+        btmcPrice: data.btmcPrice,
+        btmhPrice: data.btmhPrice,
+
+        sjcDiff: data.sjcDiff,
+        dojiDiff: data.dojiDiff,
+        btmcDiff: data.btmcDiff,
+        btmhDiff: data.btmhDiff,
+
+        sjcDiffPct: data.sjcDiffPct,
+        dojiDiffPct: data.dojiDiffPct,
+        btmcDiffPct: data.btmcDiffPct,
+        btmhDiffPct: data.btmhDiffPct,
       },
     });
 

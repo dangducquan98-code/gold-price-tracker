@@ -12,8 +12,25 @@ model GoldPriceHistory {
   id              String   @id @default(cuid())
   worldPriceUSD   Float    
   worldPriceVND   Float    
-  vnPriceVND      Float    
-  differenceVND   Float    
   exchangeRate    Float    
+
+  // VN Prices
+  sjcPrice        Float
+  dojiPrice       Float
+  btmcPrice       Float
+  btmhPrice       Float
+
+  // Differences (VND)
+  sjcDiff         Float
+  dojiDiff        Float
+  btmcDiff        Float
+  btmhDiff        Float
+
+  // Differences (%)
+  sjcDiffPct      Float
+  dojiDiffPct     Float
+  btmcDiffPct     Float
+  btmhDiffPct     Float
+
   recordedAt      DateTime @default(now())
 }

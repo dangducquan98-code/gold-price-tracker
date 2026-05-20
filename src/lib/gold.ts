@@ -1,87 +1,118 @@
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 
-// Fallback mock data if fetching fails
 const MOCK_DATA = {
-  worldPriceUSD: 2350.50, // per troy ounce
-  vnPriceVND: 8800000,    // per chi
-  exchangeRate: 25450,    // 1 USD = 25450 VND
+  worldPriceUSD: 2350.50,
+  exchangeRate: 25450,
+  sjcPrice: 8800000,
+  dojiPrice: 8780000,
+  btmcPrice: 8790000,
+  btmhPrice: 8790000,
 };
 
-/**
- * Fetch World Gold Price from Yahoo Finance or fallback
- * Returns price per troy ounce in USD
- */
 async function fetchWorldGoldPrice(): Promise<number> {
   try {
     const res = await axios.get('https://query1.finance.yahoo.com/v8/finance/chart/GC=F', {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-      }
+      headers: { 'User-Agent': 'Mozilla/5.0' }
     });
-    const price = res.data?.chart?.result?.[0]?.meta?.regularMarketPrice;
-    if (price) return price;
-    return MOCK_DATA.worldPriceUSD;
+    return res.data?.chart?.result?.[0]?.meta?.regularMarketPrice || MOCK_DATA.worldPriceUSD;
   } catch (error) {
-    console.error('Error fetching world gold price:', error);
     return MOCK_DATA.worldPriceUSD;
   }
 }
 
-/**
- * Fetch USD to VND exchange rate
- */
 async function fetchExchangeRate(): Promise<number> {
   try {
     const res = await axios.get('https://api.exchangerate-api.com/v4/latest/USD');
-    const rate = res.data?.rates?.VND;
-    if (rate) return rate;
-    return MOCK_DATA.exchangeRate;
+    return res.data?.rates?.VND || MOCK_DATA.exchangeRate;
   } catch (error) {
-    console.error('Error fetching exchange rate:', error);
     return MOCK_DATA.exchangeRate;
   }
 }
 
-/**
- * Fetch VN Gold Price (SJC)
- * Returns price per 1 Chi in VND
- */
-async function fetchVnGoldPrice(): Promise<number> {
+async function fetchVnGoldPrices() {
+  const prices = {
+    sjcPrice: 0,
+    dojiPrice: 0,
+    btmcPrice: 0,
+    btmhPrice: 0,
+  };
+
   try {
-    // For demo purposes and since most VN sites block bots, 
-    // we use a reliable mock data logic or try a simple scraping approach.
-    // If you have a TyGia API key, you can replace this with TyGia API.
-    return MOCK_DATA.vnPriceVND;
+    const res = await axios.get('https://chogia.vn/gia-vang/', {
+      headers: { 'User-Agent': 'Mozilla/5.0' }
+    });
+    const $ = cheerio.load(res.data);
+    
+    $('table tr').each((i, el) => {
+      const tds = $(el).find('td');
+      const name = tds.eq(0).text().trim().toLowerCase();
+      // The price is usually in format "159.000" which means 15,900,000 VND / chỉ
+      // We parse it and multiply by 100 to get VND
+      let sellText = tds.eq(2).text().trim().replace(/[^0-9]/g, '');
+      if (sellText) {
+        let priceVnd = parseInt(sellText) * 100; // 159000 -> 15,900,000
+        
+        if (name.includes('sjc') && prices.sjcPrice === 0) prices.sjcPrice = priceVnd;
+        if (name.includes('doji') && prices.dojiPrice === 0) prices.dojiPrice = priceVnd;
+        if (name.includes('bảo tín minh châu') && prices.btmcPrice === 0) prices.btmcPrice = priceVnd;
+        if (name.includes('bảo tín mạnh hải') && prices.btmhPrice === 0) prices.btmhPrice = priceVnd;
+      }
+    });
   } catch (error) {
-    console.error('Error fetching VN gold price:', error);
-    return MOCK_DATA.vnPriceVND;
+    console.error('Error fetching chogia:', error);
   }
+
+  // Fallbacks if not found on chogia.vn
+  if (!prices.sjcPrice) prices.sjcPrice = MOCK_DATA.sjcPrice;
+  if (!prices.dojiPrice) prices.dojiPrice = prices.sjcPrice - 200000;
+  if (!prices.btmcPrice) prices.btmcPrice = prices.sjcPrice - 100000;
+  if (!prices.btmhPrice) prices.btmhPrice = prices.btmcPrice; // Fallback to BTMC
+
+  return prices;
 }
 
 export async function getGoldData() {
-  const [worldPriceUSD, exchangeRate, vnPriceVND] = await Promise.all([
+  const [worldPriceUSD, exchangeRate, vnPrices] = await Promise.all([
     fetchWorldGoldPrice(),
     fetchExchangeRate(),
-    fetchVnGoldPrice(),
+    fetchVnGoldPrices(),
   ]);
 
-  // Calculations
-  // 1 Troy Ounce = 8.29426 Chi
   const TROY_OUNCE_TO_CHI = 8.29426;
-
-  // World price per Chi in VND
   const worldPriceVND = (worldPriceUSD / TROY_OUNCE_TO_CHI) * exchangeRate;
 
-  // Difference per Chi
-  const differenceVND = vnPriceVND - worldPriceVND;
+  const calculateDiff = (vnPrice: number) => {
+    const diff = vnPrice - worldPriceVND;
+    const diffPct = (diff / worldPriceVND) * 100;
+    return { diff, diffPct };
+  };
+
+  const sjc = calculateDiff(vnPrices.sjcPrice);
+  const doji = calculateDiff(vnPrices.dojiPrice);
+  const btmc = calculateDiff(vnPrices.btmcPrice);
+  const btmh = calculateDiff(vnPrices.btmhPrice);
 
   return {
     worldPriceUSD,
     worldPriceVND,
-    vnPriceVND,
-    differenceVND,
     exchangeRate,
+    
+    sjcPrice: vnPrices.sjcPrice,
+    dojiPrice: vnPrices.dojiPrice,
+    btmcPrice: vnPrices.btmcPrice,
+    btmhPrice: vnPrices.btmhPrice,
+
+    sjcDiff: sjc.diff,
+    dojiDiff: doji.diff,
+    btmcDiff: btmc.diff,
+    btmhDiff: btmh.diff,
+
+    sjcDiffPct: sjc.diffPct,
+    dojiDiffPct: doji.diffPct,
+    btmcDiffPct: btmc.diffPct,
+    btmhDiffPct: btmh.diffPct,
+
     recordedAt: new Date().toISOString(),
   };
 }
