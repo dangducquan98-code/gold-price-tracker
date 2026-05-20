@@ -7,13 +7,35 @@ import { vi } from 'date-fns/locale';
 export const revalidate = 60;
 
 export default async function Home() {
-  const [currentData, historyData] = await Promise.all([
+  const [currentData, dbHistoryData] = await Promise.all([
     getGoldData(),
     prisma.goldPriceHistory.findMany({
       orderBy: { recordedAt: 'desc' },
       take: 20,
     }).catch(() => []) 
   ]);
+
+  // Nếu DB trống hoặc lỗi kết nối, tạo mock data để test UI
+  const historyData = dbHistoryData.length > 0 ? dbHistoryData : [
+    {
+      id: 'mock-1',
+      recordedAt: new Date(),
+      worldPriceVND: 18200000,
+      sjcPrice: 16200000, sjcDiff: -2000000, sjcDiffPct: -10.9,
+      dojiPrice: 16150000, dojiDiff: -2050000, dojiDiffPct: -11.2,
+      btmcPrice: 16200000, btmcDiff: -2000000, btmcDiffPct: -10.9,
+      btmhPrice: 16200000, btmhDiff: -2000000, btmhDiffPct: -10.9,
+    },
+    {
+      id: 'mock-2',
+      recordedAt: new Date(Date.now() - 12 * 60 * 60 * 1000), // 12 hours ago
+      worldPriceVND: 18150000,
+      sjcPrice: 16100000, sjcDiff: -2050000, sjcDiffPct: -11.2,
+      dojiPrice: 16050000, dojiDiff: -2100000, dojiDiffPct: -11.5,
+      btmcPrice: 16100000, btmcDiff: -2050000, btmcDiffPct: -11.2,
+      btmhPrice: 16100000, btmhDiff: -2050000, btmhDiffPct: -11.2,
+    }
+  ];
 
   const formatVND = (value: number) => {
     return new Intl.NumberFormat('vi-VN', {
@@ -158,55 +180,68 @@ export default async function Home() {
         </div>
 
         {/* Historical Data Section */}
-        <div className="glass-panel rounded-3xl p-8">
+        <div className="glass-panel rounded-3xl p-6 lg:p-8 overflow-hidden">
           <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
             <h2 className="text-2xl font-bold flex items-center">
               <Clock className="w-6 h-6 mr-3 text-gold-400" />
-              Lịch Sử Biến Động (SJC)
+              Lịch Sử Biến Động (So sánh Thế Giới)
             </h2>
             <div className="text-sm text-zinc-400 bg-zinc-800/50 px-4 py-2 rounded-full border border-zinc-700/50 flex items-center">
+              {dbHistoryData.length === 0 && <span className="text-amber-500 mr-2 font-bold">(MOCK DATA)</span>}
               Lưu tự động lúc 10h sáng và 10h tối
             </div>
           </div>
 
-          {historyData.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse min-w-[600px]">
-                <thead>
-                  <tr className="border-b border-zinc-800 text-zinc-400">
-                    <th className="pb-4 font-medium pl-4">Thời Gian</th>
-                    <th className="pb-4 font-medium">Thế Giới</th>
-                    <th className="pb-4 font-medium">SJC</th>
-                    <th className="pb-4 font-medium">Chênh Lệch</th>
-                    <th className="pb-4 font-medium">Tỷ lệ (%)</th>
+          <div className="overflow-x-auto pb-4">
+            <table className="w-full text-left border-collapse min-w-[900px]">
+              <thead>
+                <tr className="border-b border-zinc-700/50 text-zinc-400 text-sm">
+                  <th className="pb-4 font-medium pl-4">Thời Gian</th>
+                  <th className="pb-4 font-medium">Thế Giới (VNĐ)</th>
+                  <th className="pb-4 font-medium">SJC</th>
+                  <th className="pb-4 font-medium">DOJI</th>
+                  <th className="pb-4 font-medium">BTMC</th>
+                  <th className="pb-4 font-medium">BTMH</th>
+                </tr>
+              </thead>
+              <tbody className="text-zinc-300">
+                {historyData.map((record) => (
+                  <tr key={record.id} className="border-b border-zinc-800/50 hover:bg-white/5 transition-colors group">
+                    <td className="py-5 pl-4 whitespace-nowrap text-sm text-zinc-400">
+                      {format(new Date(record.recordedAt), 'HH:mm - dd/MM/yyyy', { locale: vi })}
+                    </td>
+                    <td className="py-5 font-semibold text-zinc-200">
+                      {formatVND(record.worldPriceVND)}
+                    </td>
+                    <td className="py-5">
+                      <div className="font-bold text-white">{formatVND(record.sjcPrice)}</div>
+                      <div className={`text-xs mt-1 font-medium ${record.sjcDiff > 0 ? 'text-red-400' : 'text-green-400'}`}>
+                        {record.sjcDiff > 0 ? '+' : '-'}{formatVND(Math.abs(record.sjcDiff))} ({Math.abs(record.sjcDiffPct).toFixed(1)}%)
+                      </div>
+                    </td>
+                    <td className="py-5">
+                      <div className="font-bold text-white">{formatVND(record.dojiPrice)}</div>
+                      <div className={`text-xs mt-1 font-medium ${record.dojiDiff > 0 ? 'text-red-400' : 'text-green-400'}`}>
+                        {record.dojiDiff > 0 ? '+' : '-'}{formatVND(Math.abs(record.dojiDiff))} ({Math.abs(record.dojiDiffPct).toFixed(1)}%)
+                      </div>
+                    </td>
+                    <td className="py-5">
+                      <div className="font-bold text-white">{formatVND(record.btmcPrice)}</div>
+                      <div className={`text-xs mt-1 font-medium ${record.btmcDiff > 0 ? 'text-red-400' : 'text-green-400'}`}>
+                        {record.btmcDiff > 0 ? '+' : '-'}{formatVND(Math.abs(record.btmcDiff))} ({Math.abs(record.btmcDiffPct).toFixed(1)}%)
+                      </div>
+                    </td>
+                    <td className="py-5">
+                      <div className="font-bold text-white">{formatVND(record.btmhPrice)}</div>
+                      <div className={`text-xs mt-1 font-medium ${record.btmhDiff > 0 ? 'text-red-400' : 'text-green-400'}`}>
+                        {record.btmhDiff > 0 ? '+' : '-'}{formatVND(Math.abs(record.btmhDiff))} ({Math.abs(record.btmhDiffPct).toFixed(1)}%)
+                      </div>
+                    </td>
                   </tr>
-                </thead>
-                <tbody className="text-zinc-300">
-                  {historyData.map((record) => (
-                    <tr key={record.id} className="border-b border-zinc-800/50 hover:bg-white/5 transition-colors">
-                      <td className="py-4 pl-4 whitespace-nowrap">
-                        {format(new Date(record.recordedAt), 'HH:mm - dd/MM/yyyy', { locale: vi })}
-                      </td>
-                      <td className="py-4">{formatVND(record.worldPriceVND)}</td>
-                      <td className="py-4">{formatVND(record.sjcPrice)}</td>
-                      <td className="py-4 font-medium text-gold-400">
-                        {formatVND(Math.abs(record.sjcDiff))}
-                      </td>
-                      <td className="py-4 font-bold text-gold-400 text-lg">
-                        {record.sjcDiffPct.toFixed(2)}%
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div className="text-center py-12 border border-dashed border-zinc-800 rounded-2xl">
-              <Clock className="w-12 h-12 text-zinc-600 mx-auto mb-4" />
-              <p className="text-zinc-400">Chưa có dữ liệu lịch sử.</p>
-              <p className="text-zinc-500 text-sm mt-2">Dữ liệu sẽ được hệ thống cron tự động lưu vào 10h sáng và tối.</p>
-            </div>
-          )}
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </main>
