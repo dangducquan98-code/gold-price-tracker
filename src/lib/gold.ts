@@ -39,38 +39,40 @@ async function fetchVnGoldPrices() {
   };
 
   try {
-    // API aggregator ban đầu (ổn định nhất)
-    const res = await axios.get('https://chogia.vn/gia-vang/', {
-      headers: { 'User-Agent': 'Mozilla/5.0' }
+    // Lấy API từ giavang.org (rất ổn định, không block bot)
+    const res = await axios.get('https://giavang.org/', {
+      headers: { 'User-Agent': 'Mozilla/5.0' },
+      timeout: 5000,
     });
     const $ = cheerio.load(res.data);
     
     $('table tr').each((i, el) => {
       const tds = $(el).find('td');
+      if (tds.length < 3) return;
+
       const name = tds.eq(0).text().trim().toLowerCase();
-      
-      // Lấy cột thứ 3 (td index 2) là Giá Bán (Sell)
+      // Lấy cột 2 (Giá bán)
       let sellText = tds.eq(2).text().trim().replace(/[^0-9]/g, '');
       if (sellText) {
-        // Giá web hiển thị là 162.000 (tức 162 triệu / lượng)
-        // -> Giá 1 chỉ = 162.000 * 100 = 16.200.000 VND
+        // Giá web hiển thị là 162.000 -> Giá 1 chỉ = 162.000 * 100 = 16.200.000 VND
         let priceVnd = parseInt(sellText) * 100; 
         
-        if (name.includes('sjc') && prices.sjcPrice === 0) prices.sjcPrice = priceVnd;
-        if (name.includes('doji') && prices.dojiPrice === 0) prices.dojiPrice = priceVnd;
-        if (name.includes('bảo tín minh châu') && prices.btmcPrice === 0) prices.btmcPrice = priceVnd;
-        if (name.includes('bảo tín mạnh hải') && prices.btmhPrice === 0) prices.btmhPrice = priceVnd;
+        // Chỉ gán giá trị đầu tiên tìm thấy
+        if (name === 'sjc' && prices.sjcPrice === 0) prices.sjcPrice = priceVnd;
+        if (name === 'doji' && prices.dojiPrice === 0) prices.dojiPrice = priceVnd;
+        if (name === 'bảo tín minh châu' && prices.btmcPrice === 0) prices.btmcPrice = priceVnd;
+        if (name === 'bảo tín mạnh hải' && prices.btmhPrice === 0) prices.btmhPrice = priceVnd;
       }
     });
   } catch (error) {
-    console.error('Error fetching vn gold:', error);
+    console.error('Error fetching giavang.org:', error);
   }
 
-  // Fallbacks an toàn nếu không tìm thấy (trường hợp trang web thay đổi DOM)
+  // Fallbacks
   if (!prices.sjcPrice) prices.sjcPrice = MOCK_DATA.sjcPrice;
   if (!prices.dojiPrice) prices.dojiPrice = prices.sjcPrice - 50000; 
   if (!prices.btmcPrice) prices.btmcPrice = prices.sjcPrice;
-  if (!prices.btmhPrice) prices.btmhPrice = prices.btmcPrice; // BTMH luôn dùng BTMC nếu không tìm thấy
+  if (!prices.btmhPrice) prices.btmhPrice = prices.btmcPrice; 
 
   return prices;
 }

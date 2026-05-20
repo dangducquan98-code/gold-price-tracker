@@ -1,6 +1,6 @@
 import { getGoldData } from '@/lib/gold';
 import { prisma } from '@/lib/prisma';
-import { TrendingUp, TrendingDown, Clock, Globe, MapPin, DollarSign, Activity, ExternalLink } from 'lucide-react';
+import { TrendingUp, TrendingDown, Clock, Globe, MapPin, DollarSign, Activity, ExternalLink, RefreshCcw } from 'lucide-react';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
 
@@ -35,28 +35,28 @@ export default async function Home() {
       price: currentData.sjcPrice, 
       diff: currentData.sjcDiff, 
       pct: currentData.sjcDiffPct,
-      url: 'https://sjc.com.vn/gia-vang/' 
+      url: 'https://giavang.org/' 
     },
     { 
       name: 'DOJI', 
       price: currentData.dojiPrice, 
       diff: currentData.dojiDiff, 
       pct: currentData.dojiDiffPct,
-      url: 'https://giavang.doji.vn/'
+      url: 'https://giavang.org/'
     },
     { 
       name: 'Bảo Tín Minh Châu', 
       price: currentData.btmcPrice, 
       diff: currentData.btmcDiff, 
       pct: currentData.btmcDiffPct,
-      url: 'https://btmc.vn/gia-vang.html'
+      url: 'https://giavang.org/'
     },
     { 
       name: 'Bảo Tín Mạnh Hải', 
       price: currentData.btmhPrice, 
       diff: currentData.btmhDiff, 
       pct: currentData.btmhDiffPct,
-      url: 'https://baotinmanhhai.vn/gia-vang'
+      url: 'https://giavang.org/'
     },
   ];
 
@@ -79,13 +79,17 @@ export default async function Home() {
           <p className="text-zinc-400 text-lg md:text-xl max-w-2xl mx-auto">
             So sánh giá các thương hiệu vàng Việt Nam với thế giới theo thời gian thực (tính trên 1 chỉ vàng).
           </p>
+          <div className="inline-flex items-center space-x-2 text-zinc-300 bg-zinc-900/50 px-4 py-2 rounded-full border border-zinc-800 shadow-inner">
+            <RefreshCcw className="w-4 h-4 text-blue-400" />
+            <span>Tỷ giá USD/VND hiện tại: <strong className="text-white ml-1">{formatVND(currentData.exchangeRate).replace('₫', '')} VNĐ</strong></span>
+          </div>
         </header>
 
         {/* World Price */}
         <div className="flex justify-center">
-          <div className="glass-panel rounded-3xl p-8 relative overflow-hidden group hover:border-gold-500/30 transition-all duration-300 w-full max-w-md text-center">
+          <div className="glass-panel rounded-3xl p-8 relative overflow-hidden group hover:border-gold-500/30 transition-all duration-300 w-full max-w-md text-center border border-white/5">
             <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
-              <Globe className="w-32 h-32" />
+              <Globe className="w-32 h-32 text-blue-400" />
             </div>
             <div className="relative z-10">
               <div className="flex items-center justify-center space-x-2 text-zinc-400 mb-3">
@@ -95,14 +99,17 @@ export default async function Home() {
               <div className="text-4xl font-bold text-zinc-100 mb-2">
                 {formatVND(currentData.worldPriceVND)}
               </div>
-              <div className="text-zinc-500 flex items-center justify-center mb-4">
+              <div className="text-zinc-500 flex items-center justify-center mb-6">
                 <DollarSign className="w-4 h-4 mr-1" />
                 {formatUSD(currentData.worldPriceUSD)} / Troy Ounce
               </div>
-              <a href="https://finance.yahoo.com/quote/GC=F" target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-sm text-gold-400 hover:text-gold-300 transition-colors bg-gold-500/10 px-4 py-2 rounded-full border border-gold-500/20">
-                Nguồn: Yahoo Finance
-                <ExternalLink className="w-4 h-4 ml-2" />
-              </a>
+              
+              <div className="flex justify-center space-x-4">
+                <a href="https://finance.yahoo.com/quote/GC=F" target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-xs text-gold-400 hover:text-gold-300 transition-colors bg-gold-500/10 px-3 py-1.5 rounded-full border border-gold-500/20">
+                  Nguồn: Yahoo Finance
+                  <ExternalLink className="w-3 h-3 ml-1.5" />
+                </a>
+              </div>
             </div>
           </div>
         </div>
@@ -119,7 +126,7 @@ export default async function Home() {
                       <MapPin className="w-4 h-4 text-red-400" />
                       <span className="font-semibold text-lg">{brand.name}</span>
                     </div>
-                    <a href={brand.url} target="_blank" rel="noopener noreferrer" title="Kiểm tra nguồn chính thức" className="text-zinc-500 hover:text-gold-400 transition-colors">
+                    <a href={brand.url} target="_blank" rel="noopener noreferrer" title="Kiểm tra nguồn giavang.org" className="text-zinc-500 hover:text-gold-400 transition-colors">
                       <ExternalLink className="w-5 h-5" />
                     </a>
                   </div>
@@ -135,7 +142,6 @@ export default async function Home() {
                       {isPositive ? <TrendingUp className="w-4 h-4 mr-1" /> : <TrendingDown className="w-4 h-4 mr-1" />}
                       {formatVND(Math.abs(brand.diff))}
                     </div>
-                    {/* ENLARGED PERCENTAGE DISPLAY */}
                     <div className={`inline-flex items-center text-2xl font-black tracking-tight ${isPositive ? 'text-red-400' : 'text-green-400'}`}>
                       {isPositive ? '+' : '-'}{Math.abs(brand.pct).toFixed(2)}%
                     </div>
@@ -144,6 +150,11 @@ export default async function Home() {
               </div>
             );
           })}
+        </div>
+        
+        {/* Attribution note */}
+        <div className="text-center text-sm text-zinc-500 mt-4 mb-8">
+          Dữ liệu thị trường Việt Nam được tổng hợp tự động từ <a href="https://giavang.org" target="_blank" rel="noreferrer" className="text-gold-500 hover:text-gold-400 font-medium transition-colors">giavang.org</a>
         </div>
 
         {/* Historical Data Section */}
