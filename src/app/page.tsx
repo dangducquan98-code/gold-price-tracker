@@ -167,7 +167,7 @@ export default async function Home() {
               Lịch Sử Biến Động (So sánh Thế Giới)
             </h2>
             <div className="text-sm text-zinc-400 bg-zinc-800/50 px-4 py-2 rounded-full border border-zinc-700/50 flex items-center">
-              Lưu tự động lúc 10h sáng và 10h tối
+              Lưu tự động lúc 10h sáng mỗi ngày
             </div>
           </div>
 
