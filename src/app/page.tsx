@@ -15,27 +15,7 @@ export default async function Home() {
     }).catch(() => []) 
   ]);
 
-  // Nếu DB trống hoặc lỗi kết nối, tạo mock data để test UI
-  const historyData = dbHistoryData.length > 0 ? dbHistoryData : [
-    {
-      id: 'mock-1',
-      recordedAt: new Date(),
-      worldPriceVND: 18200000,
-      sjcPrice: 16200000, sjcDiff: -2000000, sjcDiffPct: -10.9,
-      dojiPrice: 16150000, dojiDiff: -2050000, dojiDiffPct: -11.2,
-      btmcPrice: 16200000, btmcDiff: -2000000, btmcDiffPct: -10.9,
-      btmhPrice: 16200000, btmhDiff: -2000000, btmhDiffPct: -10.9,
-    },
-    {
-      id: 'mock-2',
-      recordedAt: new Date(Date.now() - 12 * 60 * 60 * 1000), // 12 hours ago
-      worldPriceVND: 18150000,
-      sjcPrice: 16100000, sjcDiff: -2050000, sjcDiffPct: -11.2,
-      dojiPrice: 16050000, dojiDiff: -2100000, dojiDiffPct: -11.5,
-      btmcPrice: 16100000, btmcDiff: -2050000, btmcDiffPct: -11.2,
-      btmhPrice: 16100000, btmhDiff: -2050000, btmhDiffPct: -11.2,
-    }
-  ];
+  const historyData = dbHistoryData;
 
   const formatVND = (value: number) => {
     return new Intl.NumberFormat('vi-VN', {
@@ -187,7 +167,6 @@ export default async function Home() {
               Lịch Sử Biến Động (So sánh Thế Giới)
             </h2>
             <div className="text-sm text-zinc-400 bg-zinc-800/50 px-4 py-2 rounded-full border border-zinc-700/50 flex items-center">
-              {dbHistoryData.length === 0 && <span className="text-amber-500 mr-2 font-bold">(MOCK DATA)</span>}
               Lưu tự động lúc 10h sáng và 10h tối
             </div>
           </div>
