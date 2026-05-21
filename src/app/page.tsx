@@ -21,31 +21,31 @@ export default async function Home() {
   };
 
   const vnBrands = [
-    { 
-      name: 'SJC', 
-      price: currentData.sjcPrice, 
-      diff: currentData.sjcDiff, 
+    {
+      name: 'SJC',
+      price: currentData.sjcPrice,
+      diff: currentData.sjcDiff,
       pct: currentData.sjcDiffPct,
-      url: 'https://giavang.org/' 
+      url: 'https://giavang.org/'
     },
-    { 
-      name: 'DOJI', 
-      price: currentData.dojiPrice, 
-      diff: currentData.dojiDiff, 
+    {
+      name: 'DOJI',
+      price: currentData.dojiPrice,
+      diff: currentData.dojiDiff,
       pct: currentData.dojiDiffPct,
       url: 'https://giavang.org/'
     },
-    { 
-      name: 'Bảo Tín Minh Châu', 
-      price: currentData.btmcPrice, 
-      diff: currentData.btmcDiff, 
+    {
+      name: 'Bảo Tín Minh Châu',
+      price: currentData.btmcPrice,
+      diff: currentData.btmcDiff,
       pct: currentData.btmcDiffPct,
       url: 'https://giavang.org/'
     },
-    { 
-      name: 'Bảo Tín Mạnh Hải', 
-      price: currentData.btmhPrice, 
-      diff: currentData.btmhDiff, 
+    {
+      name: 'Bảo Tín Mạnh Hải',
+      price: currentData.btmhPrice,
+      diff: currentData.btmhDiff,
       pct: currentData.btmhDiffPct,
       url: 'https://giavang.org/'
     },
@@ -57,7 +57,7 @@ export default async function Home() {
       id: 1,
       name: 'Vàng tích trữ 24k 0,1 chỉ Bảo Tín Mạnh Hải',
       price: 1050000,
-      image: 'https://cdn.pnj.io/images/detailed/133/sp-g0xmxmy000057-mat-day-chuyen-vang-10k-dinh-da-ecz-pnj-1.png',
+      image: '/images/1.webp',
       link: 'https://s.shopee.vn/7fWpp8xKRZ',
       rating: 5.0,
       sold: '1.2k'
@@ -66,28 +66,28 @@ export default async function Home() {
       id: 2,
       name: 'Nhẫn Tiết Kiệm Vàng 24k 0.1 Chỉ Huy Thanh Jewelry (KÈM TÚI GẤM)',
       price: 1050000,
-      image: 'https://cdn.pnj.io/images/detailed/148/gnxmxmy000216-nhan-kim-tien-vang-10k-pnj-1.png',
+      image: '/images/2.webp',
       link: 'https://s.shopee.vn/8pinDNCnVq',
       rating: 4.9,
-      sold: '4.5k'
+      sold: '20.5k'
     },
     {
       id: 3,
       name: 'Thần Tài Phát 0.1 Chỉ Huy Thanh',
       price: 1050000,
-      image: 'https://cdn.pnj.io/images/detailed/99/sp-g0xmxmw000020-mat-day-chuyen-vang-10k-dinh-da-syz-pnj-1.png',
+      image: '/images/3.webp',
       link: 'https://s.shopee.vn/6feIdRteO6',
       rating: 5.0,
-      sold: '2.1k'
+      sold: '10.1k'
     },
     {
       id: 4,
       name: 'Sổ tay tiết kiệm đựng vàng nhẫn',
       price: 150000,
-      image: 'https://cdn.pnj.io/images/detailed/118/gcxmxmy000108-day-chuyen-vang-10k-dinh-da-ecz-pnj-1.png',
+      image: '/images/4.webp',
       link: 'https://s.shopee.vn/1gFcgIbemA',
       rating: 4.8,
-      sold: '8.3k'
+      sold: '9.3k'
     }
   ];
 
@@ -134,7 +134,7 @@ export default async function Home() {
                 <DollarSign className="w-4 h-4 mr-1" />
                 {formatUSD(currentData.worldPriceUSD)} / Troy Ounce
               </div>
-              
+
               <div className="flex justify-center space-x-4">
                 <a href="https://finance.yahoo.com/quote/GC=F" target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-xs text-gold-400 hover:text-gold-300 transition-colors bg-gold-500/10 px-3 py-1.5 rounded-full border border-gold-500/20">
                   Nguồn: Yahoo Finance
@@ -182,7 +182,7 @@ export default async function Home() {
             );
           })}
         </div>
-        
+
         <div className="text-center text-sm text-zinc-500 mt-4 mb-8">
           Dữ liệu thị trường Việt Nam được tổng hợp tự động từ <a href="https://giavang.org" target="_blank" rel="noreferrer" className="text-gold-500 hover:text-gold-400 font-medium transition-colors">giavang.org</a>
         </div>
@@ -192,7 +192,7 @@ export default async function Home() {
           <div className="absolute top-0 right-0 p-8 opacity-5">
             <ShoppingBag className="w-64 h-64 text-gold-400" />
           </div>
-          
+
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
               <h2 className="text-2xl font-bold flex items-center">
@@ -206,17 +206,17 @@ export default async function Home() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {affiliateProducts.map((product) => (
-                <a 
-                  key={product.id} 
+                <a
+                  key={product.id}
                   href={product.link}
                   target="_blank"
-                  rel="noopener noreferrer" 
+                  rel="noopener noreferrer"
                   className="bg-zinc-900/50 border border-zinc-800 rounded-2xl overflow-hidden hover:border-gold-500/50 hover:shadow-[0_0_15px_rgba(234,179,8,0.15)] transition-all duration-300 flex flex-col group"
                 >
                   <div className="aspect-square bg-white relative overflow-hidden flex items-center justify-center p-4">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img 
-                      src={product.image} 
+                    <img
+                      src={product.image}
                       alt={product.name}
                       className="w-full h-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-500"
                     />
