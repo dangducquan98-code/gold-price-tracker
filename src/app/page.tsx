@@ -56,7 +56,7 @@ export default async function Home() {
     {
       id: 1,
       name: 'Vàng tích trữ 24k 0,1 chỉ Bảo Tín Mạnh Hải',
-      price: 1050000,
+      price: currentData.btmhPrice / 10,
       image: '/images/1.webp',
       link: 'https://s.shopee.vn/7fWpp8xKRZ',
       rating: 5.0,
@@ -65,7 +65,7 @@ export default async function Home() {
     {
       id: 2,
       name: 'Nhẫn Tiết Kiệm Vàng 24k 0.1 Chỉ Huy Thanh Jewelry (KÈM TÚI GẤM)',
-      price: 1050000,
+      price: currentData.dojiPrice / 10,
       image: '/images/2.webp',
       link: 'https://s.shopee.vn/8pinDNCnVq',
       rating: 4.9,
@@ -74,7 +74,7 @@ export default async function Home() {
     {
       id: 3,
       name: 'Thần Tài Phát 0.1 Chỉ Huy Thanh',
-      price: 1050000,
+      price: currentData.dojiPrice / 10,
       image: '/images/3.webp',
       link: 'https://s.shopee.vn/6feIdRteO6',
       rating: 5.0,
@@ -83,7 +83,7 @@ export default async function Home() {
     {
       id: 4,
       name: 'Sổ tay tiết kiệm đựng vàng nhẫn',
-      price: 150000,
+      price: 73000,
       image: '/images/4.webp',
       link: 'https://s.shopee.vn/1gFcgIbemA',
       rating: 4.8,
