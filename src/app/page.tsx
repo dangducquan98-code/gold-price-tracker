@@ -1,21 +1,10 @@
 import { getGoldData } from '@/lib/gold';
-import { prisma } from '@/lib/prisma';
-import { TrendingUp, TrendingDown, Clock, Globe, MapPin, DollarSign, Activity, ExternalLink, RefreshCcw } from 'lucide-react';
-import { format } from 'date-fns';
-import { vi } from 'date-fns/locale';
+import { TrendingUp, TrendingDown, Globe, MapPin, DollarSign, Activity, ExternalLink, RefreshCcw, ShoppingBag, Star } from 'lucide-react';
 
 export const revalidate = 60;
 
 export default async function Home() {
-  const [currentData, dbHistoryData] = await Promise.all([
-    getGoldData(),
-    prisma.goldPriceHistory.findMany({
-      orderBy: { recordedAt: 'desc' },
-      take: 20,
-    }).catch(() => []) 
-  ]);
-
-  const historyData = dbHistoryData;
+  const currentData = await getGoldData();
 
   const formatVND = (value: number) => {
     return new Intl.NumberFormat('vi-VN', {
@@ -60,6 +49,46 @@ export default async function Home() {
       pct: currentData.btmhDiffPct,
       url: 'https://giavang.org/'
     },
+  ];
+
+  // Sản phẩm Affiliate Shopee (Thay thế link của bạn vào đây)
+  const affiliateProducts = [
+    {
+      id: 1,
+      name: 'Nhẫn Kim Tiền Vàng Tây 10K PNJ',
+      price: 1550000,
+      image: 'https://cdn.pnj.io/images/detailed/148/gnxmxmy000216-nhan-kim-tien-vang-10k-pnj-1.png',
+      link: 'https://shopee.vn/',
+      rating: 4.9,
+      sold: '1.2k'
+    },
+    {
+      id: 2,
+      name: 'Lắc Tay Vàng 18K Đính Đá Cao Cấp',
+      price: 3200000,
+      image: 'https://cdn.pnj.io/images/detailed/118/glxmxmy000018-lac-tay-vang-10k-dinh-da-ecz-pnj-1.png',
+      link: 'https://shopee.vn/',
+      rating: 5.0,
+      sold: '850'
+    },
+    {
+      id: 3,
+      name: 'Dây Chuyền Vàng Ý 18K Thanh Lịch',
+      price: 4500000,
+      image: 'https://cdn.pnj.io/images/detailed/118/gcxmxmy000108-day-chuyen-vang-10k-dinh-da-ecz-pnj-1.png',
+      link: 'https://shopee.vn/',
+      rating: 4.8,
+      sold: '430'
+    },
+    {
+      id: 4,
+      name: 'Mặt Dây Chuyền Tỳ Hưu Vàng 24K',
+      price: 2800000,
+      image: 'https://cdn.pnj.io/images/detailed/133/sp-g0xmxmy000057-mat-day-chuyen-vang-10k-dinh-da-ecz-pnj-1.png',
+      link: 'https://shopee.vn/',
+      rating: 4.9,
+      sold: '2.1k'
+    }
   ];
 
   return (
@@ -154,74 +183,70 @@ export default async function Home() {
           })}
         </div>
         
-        {/* Attribution note */}
         <div className="text-center text-sm text-zinc-500 mt-4 mb-8">
           Dữ liệu thị trường Việt Nam được tổng hợp tự động từ <a href="https://giavang.org" target="_blank" rel="noreferrer" className="text-gold-500 hover:text-gold-400 font-medium transition-colors">giavang.org</a>
         </div>
 
-        {/* Historical Data Section */}
-        <div className="glass-panel rounded-3xl p-6 lg:p-8 overflow-hidden">
-          <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
-            <h2 className="text-2xl font-bold flex items-center">
-              <Clock className="w-6 h-6 mr-3 text-gold-400" />
-              Lịch Sử Biến Động (So sánh Thế Giới)
-            </h2>
-            <div className="text-sm text-zinc-400 bg-zinc-800/50 px-4 py-2 rounded-full border border-zinc-700/50 flex items-center">
-              Lưu tự động lúc 10h sáng mỗi ngày
+        {/* Affiliate Section */}
+        <div className="glass-panel rounded-3xl p-6 lg:p-8 overflow-hidden relative">
+          <div className="absolute top-0 right-0 p-8 opacity-5">
+            <ShoppingBag className="w-64 h-64 text-gold-400" />
+          </div>
+          
+          <div className="relative z-10">
+            <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
+              <h2 className="text-2xl font-bold flex items-center">
+                <ShoppingBag className="w-6 h-6 mr-3 text-gold-400" />
+                Gợi Ý Đầu Tư Vàng (Shopee Mall)
+              </h2>
+              <div className="text-sm text-zinc-400 bg-zinc-800/50 px-4 py-2 rounded-full border border-zinc-700/50 flex items-center">
+                Mua vàng an toàn - Giao hàng tận nơi
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {affiliateProducts.map((product) => (
+                <a 
+                  key={product.id} 
+                  href={product.link}
+                  target="_blank"
+                  rel="noopener noreferrer" 
+                  className="bg-zinc-900/50 border border-zinc-800 rounded-2xl overflow-hidden hover:border-gold-500/50 hover:shadow-[0_0_15px_rgba(234,179,8,0.15)] transition-all duration-300 flex flex-col group"
+                >
+                  <div className="aspect-square bg-white relative overflow-hidden flex items-center justify-center p-4">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img 
+                      src={product.image} 
+                      alt={product.name}
+                      className="w-full h-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute top-2 right-2 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider shadow-lg">
+                      Mall
+                    </div>
+                  </div>
+                  <div className="p-4 flex flex-col flex-grow">
+                    <h3 className="font-medium text-zinc-200 line-clamp-2 mb-2 group-hover:text-gold-400 transition-colors">
+                      {product.name}
+                    </h3>
+                    <div className="mt-auto">
+                      <div className="text-gold-500 font-bold text-lg mb-2">
+                        {formatVND(product.price).replace('₫', 'đ')}
+                      </div>
+                      <div className="flex items-center justify-between text-xs text-zinc-500">
+                        <div className="flex items-center text-amber-400">
+                          <Star className="w-3 h-3 fill-current mr-1" />
+                          {product.rating}
+                        </div>
+                        <div>Đã bán {product.sold}</div>
+                      </div>
+                    </div>
+                  </div>
+                </a>
+              ))}
             </div>
           </div>
-
-          <div className="overflow-x-auto pb-4">
-            <table className="w-full text-left border-collapse min-w-[900px]">
-              <thead>
-                <tr className="border-b border-zinc-700/50 text-zinc-400 text-sm">
-                  <th className="pb-4 font-medium pl-4">Thời Gian</th>
-                  <th className="pb-4 font-medium">Thế Giới (VNĐ)</th>
-                  <th className="pb-4 font-medium">SJC</th>
-                  <th className="pb-4 font-medium">DOJI</th>
-                  <th className="pb-4 font-medium">BTMC</th>
-                  <th className="pb-4 font-medium">BTMH</th>
-                </tr>
-              </thead>
-              <tbody className="text-zinc-300">
-                {historyData.map((record) => (
-                  <tr key={record.id} className="border-b border-zinc-800/50 hover:bg-white/5 transition-colors group">
-                    <td className="py-5 pl-4 whitespace-nowrap text-sm text-zinc-400">
-                      {format(new Date(record.recordedAt), 'HH:mm - dd/MM/yyyy', { locale: vi })}
-                    </td>
-                    <td className="py-5 font-semibold text-zinc-200">
-                      {formatVND(record.worldPriceVND)}
-                    </td>
-                    <td className="py-5">
-                      <div className="font-bold text-white">{formatVND(record.sjcPrice)}</div>
-                      <div className={`text-xs mt-1 font-medium ${record.sjcDiff > 0 ? 'text-red-400' : 'text-green-400'}`}>
-                        {record.sjcDiff > 0 ? '+' : '-'}{formatVND(Math.abs(record.sjcDiff))} ({Math.abs(record.sjcDiffPct).toFixed(1)}%)
-                      </div>
-                    </td>
-                    <td className="py-5">
-                      <div className="font-bold text-white">{formatVND(record.dojiPrice)}</div>
-                      <div className={`text-xs mt-1 font-medium ${record.dojiDiff > 0 ? 'text-red-400' : 'text-green-400'}`}>
-                        {record.dojiDiff > 0 ? '+' : '-'}{formatVND(Math.abs(record.dojiDiff))} ({Math.abs(record.dojiDiffPct).toFixed(1)}%)
-                      </div>
-                    </td>
-                    <td className="py-5">
-                      <div className="font-bold text-white">{formatVND(record.btmcPrice)}</div>
-                      <div className={`text-xs mt-1 font-medium ${record.btmcDiff > 0 ? 'text-red-400' : 'text-green-400'}`}>
-                        {record.btmcDiff > 0 ? '+' : '-'}{formatVND(Math.abs(record.btmcDiff))} ({Math.abs(record.btmcDiffPct).toFixed(1)}%)
-                      </div>
-                    </td>
-                    <td className="py-5">
-                      <div className="font-bold text-white">{formatVND(record.btmhPrice)}</div>
-                      <div className={`text-xs mt-1 font-medium ${record.btmhDiff > 0 ? 'text-red-400' : 'text-green-400'}`}>
-                        {record.btmhDiff > 0 ? '+' : '-'}{formatVND(Math.abs(record.btmhDiff))} ({Math.abs(record.btmhDiffPct).toFixed(1)}%)
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
         </div>
+
       </div>
     </main>
   );
