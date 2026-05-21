@@ -51,43 +51,43 @@ export default async function Home() {
     },
   ];
 
-  // Sản phẩm Affiliate Shopee (Thay thế link của bạn vào đây)
+  // Sản phẩm Affiliate Shopee
   const affiliateProducts = [
     {
       id: 1,
-      name: 'Nhẫn Kim Tiền Vàng Tây 10K PNJ',
-      price: 1550000,
-      image: 'https://cdn.pnj.io/images/detailed/148/gnxmxmy000216-nhan-kim-tien-vang-10k-pnj-1.png',
-      link: 'https://shopee.vn/',
-      rating: 4.9,
+      name: 'Vàng tích trữ 24k 0,1 chỉ Bảo Tín Mạnh Hải',
+      price: 1050000,
+      image: 'https://cdn.pnj.io/images/detailed/133/sp-g0xmxmy000057-mat-day-chuyen-vang-10k-dinh-da-ecz-pnj-1.png',
+      link: 'https://s.shopee.vn/7fWpp8xKRZ',
+      rating: 5.0,
       sold: '1.2k'
     },
     {
       id: 2,
-      name: 'Lắc Tay Vàng 18K Đính Đá Cao Cấp',
-      price: 3200000,
-      image: 'https://cdn.pnj.io/images/detailed/118/glxmxmy000018-lac-tay-vang-10k-dinh-da-ecz-pnj-1.png',
-      link: 'https://shopee.vn/',
-      rating: 5.0,
-      sold: '850'
+      name: 'Nhẫn Tiết Kiệm Vàng 24k 0.1 Chỉ Huy Thanh Jewelry (KÈM TÚI GẤM)',
+      price: 1050000,
+      image: 'https://cdn.pnj.io/images/detailed/148/gnxmxmy000216-nhan-kim-tien-vang-10k-pnj-1.png',
+      link: 'https://s.shopee.vn/8pinDNCnVq',
+      rating: 4.9,
+      sold: '4.5k'
     },
     {
       id: 3,
-      name: 'Dây Chuyền Vàng Ý 18K Thanh Lịch',
-      price: 4500000,
-      image: 'https://cdn.pnj.io/images/detailed/118/gcxmxmy000108-day-chuyen-vang-10k-dinh-da-ecz-pnj-1.png',
-      link: 'https://shopee.vn/',
-      rating: 4.8,
-      sold: '430'
+      name: 'Thần Tài Phát 0.1 Chỉ Huy Thanh',
+      price: 1050000,
+      image: 'https://cdn.pnj.io/images/detailed/99/sp-g0xmxmw000020-mat-day-chuyen-vang-10k-dinh-da-syz-pnj-1.png',
+      link: 'https://s.shopee.vn/6feIdRteO6',
+      rating: 5.0,
+      sold: '2.1k'
     },
     {
       id: 4,
-      name: 'Mặt Dây Chuyền Tỳ Hưu Vàng 24K',
-      price: 2800000,
-      image: 'https://cdn.pnj.io/images/detailed/133/sp-g0xmxmy000057-mat-day-chuyen-vang-10k-dinh-da-ecz-pnj-1.png',
-      link: 'https://shopee.vn/',
-      rating: 4.9,
-      sold: '2.1k'
+      name: 'Sổ tay tiết kiệm đựng vàng nhẫn',
+      price: 150000,
+      image: 'https://cdn.pnj.io/images/detailed/118/gcxmxmy000108-day-chuyen-vang-10k-dinh-da-ecz-pnj-1.png',
+      link: 'https://s.shopee.vn/1gFcgIbemA',
+      rating: 4.8,
+      sold: '8.3k'
     }
   ];
 
