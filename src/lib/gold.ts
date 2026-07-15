@@ -38,32 +38,38 @@ async function fetchVnGoldPrices() {
     btmhPrice: 0,
   };
 
-  try {
-    // Lấy API từ giavang.org (rất ổn định, không block bot)
-    const res = await axios.get('https://giavang.org/', {
-      headers: { 'User-Agent': 'Mozilla/5.0' },
-      timeout: 5000,
-    });
-    const $ = cheerio.load(res.data);
-    
-    $('table tr').each((i, el) => {
-      const tds = $(el).find('td');
-      if (tds.length < 3) return;
-
-      const name = tds.eq(0).text().trim().toLowerCase();
-      // Lấy cột 2 (Giá bán)
-      let sellText = tds.eq(2).text().trim().replace(/[^0-9]/g, '');
-      if (sellText) {
-        // Giá web hiển thị là 162.000 -> Giá 1 chỉ = 162.000 * 100 = 16.200.000 VND
-        let priceVnd = parseInt(sellText) * 100; 
+  const fetchPrice = async (url: string, keywords: string[]) => {
+    try {
+      const res = await axios.get(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 8000 });
+      const $ = cheerio.load(res.data);
+      let priceVnd = 0;
+      $('table tr').each((i, el) => {
+        const firstCol = $(el).children().eq(0).text().trim().toLowerCase();
+        const sellText = $(el).children().eq(2).text().trim().replace(/[^0-9]/g, '');
         
-        // Chỉ gán giá trị đầu tiên tìm thấy
-        if (name === 'sjc' && prices.sjcPrice === 0) prices.sjcPrice = priceVnd;
-        if (name === 'doji' && prices.dojiPrice === 0) prices.dojiPrice = priceVnd;
-        if (name === 'bảo tín minh châu' && prices.btmcPrice === 0) prices.btmcPrice = priceVnd;
-        if (name === 'bảo tín mạnh hải' && prices.btmhPrice === 0) prices.btmhPrice = priceVnd;
-      }
-    });
+        if (keywords.some(k => firstCol.includes(k.toLowerCase())) && sellText && priceVnd === 0) {
+          priceVnd = parseInt(sellText) * 100;
+        }
+      });
+      return priceVnd;
+    } catch (e) {
+      console.error('Error fetching', url, e);
+      return 0;
+    }
+  };
+
+  try {
+    const [sjc, doji, btmc, btmh] = await Promise.all([
+      fetchPrice('https://giavang.org/trong-nuoc/sjc/', ['vàng nhẫn sjc 99,99%', 'nhẫn sjc']),
+      fetchPrice('https://giavang.org/trong-nuoc/doji/', ['nhẫn tròn 999 hưng thịnh vượng', 'nhẫn tròn']),
+      fetchPrice('https://giavang.org/trong-nuoc/bao-tin-minh-chau/', ['nhẫn tròn trơn']),
+      fetchPrice('https://giavang.org/trong-nuoc/bao-tin-manh-hai/', ['vàng kim gia bảo', 'đồng vàng kim gia bảo', 'nhẫn tròn'])
+    ]);
+
+    prices.sjcPrice = sjc;
+    prices.dojiPrice = doji;
+    prices.btmcPrice = btmc;
+    prices.btmhPrice = btmh;
   } catch (error) {
     console.error('Error fetching giavang.org:', error);
   }
