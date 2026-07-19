@@ -1,5 +1,10 @@
 import type { Metadata } from 'next';
+import { Space_Grotesk, Inter, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
+
+const spaceGrotesk = Space_Grotesk({ subsets: ['latin', 'vietnamese'], variable: '--font-space-grotesk' });
+const inter = Inter({ subsets: ['latin', 'vietnamese'], variable: '--font-inter' });
+const jetbrainsMono = JetBrains_Mono({ subsets: ['latin', 'vietnamese'], variable: '--font-jetbrains-mono' });
 
 export const metadata: Metadata = {
   title: 'Theo Dõi Chênh Lệch Giá Vàng | Gold Price Tracker',
@@ -30,7 +35,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="vi" className="dark">
-      <body className="min-h-screen bg-[#09090b] text-zinc-50 antialiased selection:bg-gold-500/30">
+      <body className={`${spaceGrotesk.variable} ${inter.variable} ${jetbrainsMono.variable} min-h-screen antialiased selection:bg-[oklch(75%_0.16_85/0.3)]`}>
         {children}
       </body>
     </html>

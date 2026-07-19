@@ -1,42 +1,108 @@
 @import "tailwindcss";
 
 @theme {
-  --color-gold-50: #fbf7e7;
-  --color-gold-100: #f6ecbe;
-  --color-gold-200: #f0de88;
-  --color-gold-300: #e8c950;
-  --color-gold-400: #e2b426;
-  --color-gold-500: #d79f16;
-  --color-gold-600: #b87c10;
-  --color-gold-700: #935a11;
-  --color-gold-800: #7a4816;
-  --color-gold-900: #663b17;
-  --color-gold-950: #3b1e09;
+  --color-paper: oklch(14% 0.005 80);
+  --color-paper-2: oklch(18% 0.008 80);
+  --color-rule: oklch(30% 0.005 80);
+  --color-rule-2: oklch(35% 0.005 80);
+  --color-neutral: oklch(58% 0.005 80);
+  --color-muted: oklch(72% 0.006 80);
+  --color-ink: oklch(94% 0.006 80);
+  --color-ink-2: oklch(85% 0.006 80);
+  --color-accent: oklch(75% 0.16 85); /* Gold */
+  --color-accent-ink: oklch(20% 0.02 85); /* Dark ink for button text */
+  --color-focus: oklch(70% 0.16 85);
+  --color-graphite: oklch(22% 0.016 260); /* For code/data cards if needed */
+
+  --font-display: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
+  --font-body: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
 }
 
 @layer base {
   :root {
-    --background: #09090b;
-    --foreground: #fafafa;
+    --background: var(--color-paper);
+    --foreground: var(--color-ink);
   }
+  
+  html, body {
+    overflow-x: clip;
+  }
+  
   body {
-    background-color: var(--background);
-    color: var(--foreground);
-    font-family: Arial, Helvetica, sans-serif;
+    background-color: var(--color-paper);
+    color: var(--color-ink-2);
+    font-family: var(--font-body);
+    font-weight: 400;
+  }
+
+  /* Typography Scale */
+  h1, h2, h3, h4, h5, h6, .display {
+    font-family: var(--font-display);
+    color: var(--color-ink);
+    letter-spacing: -0.02em;
+  }
+
+  .text-display {
+    font-size: clamp(2.75rem, 5vw + 1rem, 5.25rem);
+    line-height: 1.05;
   }
 }
 
-.glass-panel {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+/* Reveal Animation */
+.reveal {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity .6s cubic-bezier(0.16,1,0.3,1), transform .6s cubic-bezier(0.16,1,0.3,1);
+}
+.reveal.is-in {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: none; }
 }
 
-.text-gradient {
-  background: linear-gradient(135deg, #f6ecbe 0%, #e2b426 50%, #b87c10 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+/* Hallmark Custom Styles */
+.nav {
+  border-bottom: 1px solid var(--color-rule);
+  backdrop-filter: blur(8px);
+}
+
+.btn--primary {
+  background: var(--color-accent);
+  color: var(--color-accent-ink);
+  border-radius: 6px;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  transition: opacity 0.2s;
+}
+.btn--primary:hover {
+  opacity: 0.9;
+}
+
+.btn--outline {
+  border: 1px solid var(--color-rule);
+  color: var(--color-ink);
+  border-radius: 6px;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  transition: border-color 0.2s;
+}
+.btn--outline:hover {
+  border-color: var(--color-accent);
+}
+
+.data-card {
+  background: var(--color-paper-2);
+  border: 1px solid var(--color-rule);
+  border-radius: 6px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+.data-card:hover {
+  border-color: var(--color-rule-2);
+}
+
+.tnum {
+  font-variant-numeric: tabular-nums;
 }

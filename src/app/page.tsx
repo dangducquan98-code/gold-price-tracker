@@ -1,24 +1,11 @@
 import { getGoldData } from '@/lib/gold';
-import { TrendingUp, TrendingDown, Globe, MapPin, DollarSign, Activity, ExternalLink, RefreshCcw, ShoppingBag, Star } from 'lucide-react';
+import { ExternalLink, Star, ArrowRight } from 'lucide-react';
 
 export const revalidate = 60;
 
 export default async function Home() {
   const currentData = await getGoldData();
-
-  const formatVND = (value: number) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND',
-    }).format(value);
-  };
-
-  const formatUSD = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(value);
-  };
+  const formatVND = (value: number) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value).replace('₫', 'đ');
 
   const vnBrands = [
     {
@@ -92,162 +79,117 @@ export default async function Home() {
   ];
 
   return (
-    <main className="min-h-screen p-4 md:p-8 lg:p-24 overflow-hidden relative">
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-gold-500/20 rounded-full blur-[120px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-zinc-700/30 rounded-full blur-[120px]" />
-      </div>
+    <>
+      {/* N1b-style Minimal Nav */}
+      <nav className="nav sticky top-0 left-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-paper/80">
+        <div className="font-display font-bold text-lg tracking-tight text-ink flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-accent"></div>
+          GOLD TRACKER
+        </div>
+        <div className="text-sm font-mono text-muted uppercase tracking-widest hidden sm:block">
+          VN ⇄ World
+        </div>
+      </nav>
 
-      <div className="max-w-6xl mx-auto space-y-12">
-        <header className="text-center space-y-4">
-          <div className="inline-flex items-center justify-center p-2 bg-gold-500/10 rounded-2xl mb-4 border border-gold-500/20">
-            <Activity className="w-6 h-6 text-gold-400 mr-2" />
-            <span className="text-gold-200 font-medium tracking-wide">REAL-TIME GOLD TRACKER</span>
+      <main className="px-4 py-16 md:py-24 max-w-5xl mx-auto flex flex-col gap-24">
+        
+        {/* H4 · Stat-Led Hero */}
+        <section className="stat-hero flex flex-col items-start reveal is-in">
+          <div className="text-display font-mono font-bold leading-none tracking-tighter text-ink mb-6 tnum">
+            {formatVND(currentData.sjcPrice)}
           </div>
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-gradient">
-            Chênh Lệch Giá Vàng
+          <h1 className="text-2xl md:text-3xl font-display font-medium text-ink-2 max-w-2xl leading-snug">
+            Giá vàng nhẫn 9999 SJC trong nước. <br/>
+            <span className="text-muted">Đang chênh lệch {(currentData.sjcDiffPct > 0 ? '+' : '')}{currentData.sjcDiffPct.toFixed(2)}% so với thị trường thế giới.</span>
           </h1>
-          <p className="text-zinc-400 text-lg md:text-xl max-w-2xl mx-auto">
-            So sánh giá các thương hiệu vàng Việt Nam với thế giới theo thời gian thực (tính trên 1 chỉ vàng).
-          </p>
-          <div className="inline-flex items-center space-x-2 text-zinc-300 bg-zinc-900/50 px-4 py-2 rounded-full border border-zinc-800 shadow-inner">
-            <RefreshCcw className="w-4 h-4 text-blue-400" />
-            <span>Tỷ giá USD/VND hiện tại: <strong className="text-white ml-1">{formatVND(currentData.exchangeRate).replace('₫', '')} VNĐ</strong></span>
+          <div className="mt-10 flex gap-4">
+            <a href="#affiliate" className="btn--primary inline-flex items-center gap-2">
+              Xem gợi ý đầu tư <ArrowRight className="w-4 h-4" />
+            </a>
+            <a href="#world-price" className="btn--outline inline-flex items-center">
+              Giá thế giới
+            </a>
           </div>
-        </header>
+        </section>
 
-        {/* World Price */}
-        <div className="flex justify-center">
-          <div className="glass-panel rounded-3xl p-8 relative overflow-hidden group hover:border-gold-500/30 transition-all duration-300 w-full max-w-md text-center border border-white/5">
-            <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
-              <Globe className="w-32 h-32 text-blue-400" />
+        {/* F3 / Grid variant for Supporting Stats */}
+        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 reveal is-in" style={{ transitionDelay: '100ms' }}>
+          {vnBrands.map(brand => (
+            <div key={brand.name} className="data-card p-6 flex flex-col">
+               <div className="text-xs font-mono uppercase text-muted mb-4 tracking-wider flex justify-between items-center">
+                 {brand.name}
+                 <a href={brand.url} target="_blank" rel="noopener noreferrer" className="hover:text-ink transition-colors">
+                   <ExternalLink className="w-3 h-3" />
+                 </a>
+               </div>
+               <div className="text-2xl font-display font-bold text-ink tnum mb-1">{formatVND(brand.price)}</div>
+               <div className={`text-sm font-mono ${brand.diff > 0 ? 'text-red-400' : 'text-green-400'}`}>
+                 {brand.diff > 0 ? '+' : ''}{formatVND(brand.diff)} ({brand.pct > 0 ? '+' : ''}{brand.pct.toFixed(2)}%)
+               </div>
             </div>
-            <div className="relative z-10">
-              <div className="flex items-center justify-center space-x-2 text-zinc-400 mb-3">
-                <Globe className="w-5 h-5 text-blue-400" />
-                <span className="font-medium text-lg">Giá Thế Giới / Chỉ</span>
-              </div>
-              <div className="text-4xl font-bold text-zinc-100 mb-2">
-                {formatVND(currentData.worldPriceVND)}
-              </div>
-              <div className="text-zinc-500 flex items-center justify-center mb-6">
-                <DollarSign className="w-4 h-4 mr-1" />
-                {formatUSD(currentData.worldPriceUSD)} / Troy Ounce
-              </div>
+          ))}
+        </section>
 
-              <div className="flex justify-center space-x-4">
-                <a href="https://finance.yahoo.com/quote/GC=F" target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-xs text-gold-400 hover:text-gold-300 transition-colors bg-gold-500/10 px-3 py-1.5 rounded-full border border-gold-500/20">
-                  Nguồn: Yahoo Finance
-                  <ExternalLink className="w-3 h-3 ml-1.5" />
-                </a>
-              </div>
+        {/* World Price Focus */}
+        <section id="world-price" className="data-card p-8 md:p-12 border-l-4 border-l-accent reveal is-in" style={{ transitionDelay: '200ms' }}>
+           <h2 className="text-xs font-mono uppercase text-muted mb-4 tracking-wider">Giá thế giới quy đổi (1 chỉ)</h2>
+           <div className="text-4xl md:text-5xl font-display font-bold text-ink tnum mb-3">{formatVND(currentData.worldPriceVND)}</div>
+           <div className="text-muted font-mono text-sm">~ {currentData.worldPriceUSD.toFixed(2)} USD / Troy Ounce</div>
+           <p className="mt-6 text-sm text-ink-2 max-w-xl font-body leading-relaxed">
+             Tỷ giá quy đổi tham chiếu: <span className="font-mono">{formatVND(currentData.exchangeRate)}</span>. 
+             Dữ liệu được cập nhật realtime từ thị trường toàn cầu giúp bạn có cái nhìn tổng quan trước khi quyết định đầu tư.
+           </p>
+        </section>
+
+        {/* F6 Product Card Grid - Affiliate Section */}
+        <section id="affiliate" className="pt-16 border-t border-rule reveal is-in" style={{ transitionDelay: '300ms' }}>
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
+            <div>
+              <h2 className="text-3xl font-display font-bold text-ink mb-3">Đầu tư vàng thông minh</h2>
+              <p className="text-ink-2 font-body">Sản phẩm vàng nhẫn, vàng miếng chính hãng phân phối trên Shopee Mall.</p>
+            </div>
+            <div className="text-xs font-mono text-accent uppercase tracking-widest bg-accent/10 px-3 py-1.5 rounded-sm self-start md:self-auto border border-accent/20">
+              Giao hàng tận nơi
             </div>
           </div>
-        </div>
 
-        {/* VN Brands Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {vnBrands.map((brand, idx) => {
-            const isPositive = brand.diff > 0;
-            return (
-              <div key={idx} className="glass-panel rounded-3xl p-6 relative overflow-hidden flex flex-col justify-between hover:bg-white/5 transition-all duration-300 border border-white/5 hover:border-gold-500/30">
-                <div className="mb-6">
-                  <div className="flex items-center justify-between text-zinc-300 mb-3">
-                    <div className="flex items-center space-x-2">
-                      <MapPin className="w-4 h-4 text-red-400" />
-                      <span className="font-semibold text-lg">{brand.name}</span>
-                    </div>
-                    <a href={brand.url} target="_blank" rel="noopener noreferrer" title="Kiểm tra nguồn giavang.org" className="text-zinc-500 hover:text-gold-400 transition-colors">
-                      <ExternalLink className="w-5 h-5" />
-                    </a>
-                  </div>
-                  <div className="text-2xl font-bold text-white mb-2">
-                    {formatVND(brand.price)}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {affiliateProducts.map(p => (
+              <a key={p.id} href={p.link} target="_blank" rel="noopener noreferrer" className="data-card p-4 group flex flex-col h-full hover:border-accent transition-colors">
+                <div className="bg-white rounded-sm overflow-hidden mb-5 relative aspect-square p-2 border border-rule-2">
+                   {/* eslint-disable-next-line @next/next/no-img-element */}
+                   <img src={p.image} alt={p.name} className="w-full h-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-500" />
+                   <span className="absolute top-2 right-2 bg-accent text-accent-ink font-mono text-[10px] uppercase px-1.5 py-0.5 rounded-sm shadow-sm">Mall</span>
+                </div>
+                <h3 className="font-medium text-sm text-ink-2 mb-6 group-hover:text-ink transition-colors line-clamp-2 leading-relaxed">
+                  {p.name}
+                </h3>
+                <div className="mt-auto pt-4 border-t border-rule-2 border-dashed">
+                  <div className="font-display font-bold text-lg text-ink tnum">{formatVND(p.price)}</div>
+                  <div className="flex justify-between items-center text-xs font-mono text-muted mt-3">
+                     <div className="flex items-center"><Star className="w-3 h-3 fill-accent text-accent mr-1.5"/> {p.rating}</div>
+                     <div>Bán {p.sold}</div>
                   </div>
                 </div>
-
-                <div className="pt-4 border-t border-zinc-800">
-                  <div className="text-sm text-zinc-400 mb-2">Độ chênh lệch:</div>
-                  <div className="flex items-end justify-between">
-                    <div className={`font-medium flex items-center ${isPositive ? 'text-red-400' : 'text-green-400'}`}>
-                      {isPositive ? <TrendingUp className="w-4 h-4 mr-1" /> : <TrendingDown className="w-4 h-4 mr-1" />}
-                      {formatVND(Math.abs(brand.diff))}
-                    </div>
-                    <div className={`inline-flex items-center text-2xl font-black tracking-tight ${isPositive ? 'text-red-400' : 'text-green-400'}`}>
-                      {isPositive ? '+' : '-'}{Math.abs(brand.pct).toFixed(2)}%
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        <div className="text-center text-sm text-zinc-500 mt-4 mb-8">
-          Dữ liệu thị trường Việt Nam được tổng hợp tự động từ <a href="https://giavang.org" target="_blank" rel="noreferrer" className="text-gold-500 hover:text-gold-400 font-medium transition-colors">giavang.org</a>
-        </div>
-
-        {/* Affiliate Section */}
-        <div className="glass-panel rounded-3xl p-6 lg:p-8 overflow-hidden relative">
-          <div className="absolute top-0 right-0 p-8 opacity-5">
-            <ShoppingBag className="w-64 h-64 text-gold-400" />
+              </a>
+            ))}
           </div>
+        </section>
 
-          <div className="relative z-10">
-            <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
-              <h2 className="text-2xl font-bold flex items-center">
-                <ShoppingBag className="w-6 h-6 mr-3 text-gold-400" />
-                Gợi Ý Đầu Tư Vàng (Shopee Mall)
-              </h2>
-              <div className="text-sm text-zinc-400 bg-zinc-800/50 px-4 py-2 rounded-full border border-zinc-700/50 flex items-center">
-                Mua vàng an toàn - Giao hàng tận nơi
+        {/* Ft5 Statement Footer */}
+        <footer className="mt-16 pt-16 border-t border-rule flex flex-col gap-12 reveal is-in" style={{ transitionDelay: '400ms' }}>
+           <div className="text-2xl md:text-3xl font-display font-medium text-ink max-w-3xl leading-tight">
+             Dữ liệu được cập nhật tự động từ giavang.org và thị trường thế giới. Mọi quyết định đầu tư đều do bạn lựa chọn.
+           </div>
+           <div className="flex flex-col md:flex-row justify-between text-xs font-mono text-muted pt-8 border-t border-rule-2 gap-4">
+              <div>GOLD TRACKER &copy; 2026</div>
+              <div className="flex gap-6">
+                 <a href="#" className="hover:text-ink transition-colors">Trang chủ</a>
+                 <a href="https://giavang.org" target="_blank" rel="noopener noreferrer" className="hover:text-ink transition-colors">Nguồn dữ liệu ↗</a>
               </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {affiliateProducts.map((product) => (
-                <a
-                  key={product.id}
-                  href={product.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="bg-zinc-900/50 border border-zinc-800 rounded-2xl overflow-hidden hover:border-gold-500/50 hover:shadow-[0_0_15px_rgba(234,179,8,0.15)] transition-all duration-300 flex flex-col group"
-                >
-                  <div className="aspect-square bg-white relative overflow-hidden flex items-center justify-center p-4">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="w-full h-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-500"
-                    />
-                    <div className="absolute top-2 right-2 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider shadow-lg">
-                      Mall
-                    </div>
-                  </div>
-                  <div className="p-4 flex flex-col flex-grow">
-                    <h3 className="font-medium text-zinc-200 line-clamp-2 mb-2 group-hover:text-gold-400 transition-colors">
-                      {product.name}
-                    </h3>
-                    <div className="mt-auto">
-                      <div className="text-gold-500 font-bold text-lg mb-2">
-                        {formatVND(product.price).replace('₫', 'đ')}
-                      </div>
-                      <div className="flex items-center justify-between text-xs text-zinc-500">
-                        <div className="flex items-center text-amber-400">
-                          <Star className="w-3 h-3 fill-current mr-1" />
-                          {product.rating}
-                        </div>
-                        <div>Đã bán {product.sold}</div>
-                      </div>
-                    </div>
-                  </div>
-                </a>
-              ))}
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </main>
+           </div>
+        </footer>
+      </main>
+    </>
   );
 }
