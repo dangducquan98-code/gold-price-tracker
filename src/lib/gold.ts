@@ -12,20 +12,26 @@ const MOCK_DATA = {
 
 async function fetchWorldGoldPrice(): Promise<number> {
   try {
-    const res = await axios.get('https://query1.finance.yahoo.com/v8/finance/chart/GC=F', {
-      headers: { 'User-Agent': 'Mozilla/5.0' }
+    const res = await axios.get('https://giavang.org/the-gioi/', {
+      headers: { 'User-Agent': 'Mozilla/5.0' },
+      timeout: 8000
     });
-    return res.data?.chart?.result?.[0]?.meta?.regularMarketPrice || MOCK_DATA.worldPriceUSD;
+    const $ = cheerio.load(res.data);
+    const priceText = $('.crypto-price').attr('data-price') || $('.crypto-price').first().text();
+    const price = parseFloat(priceText.replace(/,/g, ''));
+    return price > 0 ? price : MOCK_DATA.worldPriceUSD;
   } catch (error) {
+    console.error('Error fetching world gold price:', error);
     return MOCK_DATA.worldPriceUSD;
   }
 }
 
 async function fetchExchangeRate(): Promise<number> {
   try {
-    const res = await axios.get('https://api.exchangerate-api.com/v4/latest/USD');
+    const res = await axios.get('https://open.er-api.com/v6/latest/USD', { timeout: 8000 });
     return res.data?.rates?.VND || MOCK_DATA.exchangeRate;
   } catch (error) {
+    console.error('Error fetching exchange rate:', error);
     return MOCK_DATA.exchangeRate;
   }
 }
